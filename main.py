@@ -68,7 +68,7 @@ def text_to_speech(text, audio_path):
 
 def main():
     # Define file paths
-    pdf_path = "Module-4.pdf"  # Path to your PDF file
+    pdf_path = "resume harshita.pdf"  # Path to your PDF file
     csv_path = "output.csv"  # Path to save CSV file
     xml_path = "output.xml"  # Path to save XML file
     audio_path = "output.mp3"  # Path to save audio file
