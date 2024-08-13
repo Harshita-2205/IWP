@@ -15,10 +15,21 @@ with st.sidebar:
                            icons=["house", "info-circle", "cloud-upload"],
                            menu_icon="cast", default_index=0)
 
-# Home section
 if selected == "Home":
     st.title('Welcome to PDF to Audio Converter')
-    st.write("Use the navigation bar to switch between sections.")
+
+    # Create two columns
+    col1, col2 = st.columns(2)
+
+    # Add text in the left column
+    with col1:
+        st.write("Use the navigation bar to switch between sections.")
+        st.write("You can upload a PDF file and convert it to an audio file.")
+        st.write("Once you've uploaded your file, we'll convert it into an audio file for you.")
+    
+    # Add an image in the right column
+    with col2:
+        st.image("logo.jpg", caption="Convert PDF to Audio", use_column_width=True)
 
 # About section
 elif selected == "About":
