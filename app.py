@@ -34,19 +34,10 @@ elif selected == "About":
 
 # Upload File section
 elif selected == "Upload File":
-    st.title('Upload PDF File')
-    
+    st.title('Upload PDF or TXT File')
+
     # PDF extraction using pdfplumber
     def extract_text_from_pdf(pdf_path):
-        """
-        Extract text from a PDF file.
-
-        Args:
-            pdf_path (str): Path to the PDF file.
-
-        Returns:
-            str: Extracted text.
-        """
         try:
             text = ""
             with pdfplumber.open(pdf_path) as pdf:
@@ -59,15 +50,16 @@ elif selected == "Upload File":
             st.error(f"Error extracting text from PDF: {e}")
             return None
 
-    # Extracted text save to CSV
-    def save_text_to_csv(text, csv_path):
-        """
-        Save text to a CSV file.
+    # TXT file reader
+    def extract_text_from_txt(txt_file):
+        try:
+            return txt_file.read().decode("utf-8")
+        except Exception as e:
+            st.error(f"Error reading text file: {e}")
+            return None
 
-        Args:
-            text (str): Text to save.
-            csv_path (str): Path to the CSV file.
-        """
+    # Save extracted text to CSV
+    def save_text_to_csv(text, csv_path):
         try:
             df = pd.DataFrame({"Text": [text]})
             df.to_csv(csv_path, index=False)
@@ -76,13 +68,6 @@ elif selected == "Upload File":
 
     # Convert text to speech
     def text_to_speech(text, audio_path):
-        """
-        Convert text to speech and save as an audio file.
-
-        Args:
-            text (str): Text to convert.
-            audio_path (str): Path to the audio file.
-        """
         try:
             tts = gTTS(text)
             tts.save(audio_path)
@@ -90,21 +75,25 @@ elif selected == "Upload File":
             st.error(f"Error converting text to speech: {e}")
 
     # File uploader section
-    uploaded_file = st.file_uploader("Upload a PDF file", type=["pdf"])
+    uploaded_file = st.file_uploader("Upload a PDF or TXT file", type=["pdf", "txt"])
 
     if uploaded_file is not None:
-        # Save the uploaded file to a temporary file
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_file:
-            temp_file.write(uploaded_file.getvalue())
-            temp_file_path = temp_file.name
+        # Handle PDF files
+        if uploaded_file.name.endswith(".pdf"):
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_file:
+                temp_file.write(uploaded_file.getvalue())
+                temp_file_path = temp_file.name
 
-        # Extract text from PDF
-        extract_text = extract_text_from_pdf(temp_file_path)
+            extract_text = extract_text_from_pdf(temp_file_path)
+
+        # Handle TXT files
+        elif uploaded_file.name.endswith(".txt"):
+            extract_text = extract_text_from_txt(uploaded_file)
 
         if extract_text:
             # Display extracted text
             st.header('Extracted Text')
-            st.text_area('Extracted Text from PDF', extract_text, height=300)
+            st.text_area('Extracted Text from File', extract_text, height=300)
 
             # Save extracted text to CSV
             csv_file_path = "extracted_text.csv"
@@ -127,7 +116,8 @@ elif selected == "Upload File":
             st.download_button('Download Audio File', audio_data, file_name='text_to_speech.mp3')
 
             # Clean up temporary files
-            os.remove(temp_file_path)
+            if uploaded_file.name.endswith(".pdf"):
+                os.remove(temp_file_path)
             os.remove(audio_file_path)
         else:
-            st.error("Failed to extract text from the PDF file. Please check the file and try again.")
+            st.error("Failed to extract text from the file. Please check the file and try again.")
